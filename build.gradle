@@ -1,0 +1,10 @@
+group 'ura'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+dependencies {
+    compile files('libs/json-simple-2.1.2.jar')
+}
