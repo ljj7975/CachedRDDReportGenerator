@@ -14,6 +14,7 @@ public class RDD implements Comparable<RDD> {
     int numCachedPartitions;
     int memorySize;
     int diskSize;
+    boolean hasBeenCached;                                  // whether partition has been physically cached or not
 
     List<StorageLevel> storageLevelHistory;
 
@@ -41,6 +42,19 @@ public class RDD implements Comparable<RDD> {
         rddId = ((BigDecimal) rddJson.get("RDD ID")).intValue();
         callsite = (String) rddJson.get("Callsite");
 
+        // TODO :: cleaning up code for grabing Scope information from string hashmap
+        String value = (String) rddJson.get("Scope");
+        value = value.substring(1, value.length()-1);           //remove curly brackets
+        String[] keyValuePairs = value.split(",");              //split the string to creat key-value pairs
+        for(String pair : keyValuePairs)                        //iterate over the pairs
+        {
+            String[] entry = pair.split(":");                   //split the pairs to get key and value
+            if ("\"name\"".equals(entry[0])) {
+                callsite += " - "+entry[1].substring(1, entry[1].length()-1);
+                break;
+            }
+        }
+
         JsonObject storageLevelJson = (JsonObject) rddJson.get("Storage Level");
         storageLevel = new StorageLevel(storageLevelJson);
 
@@ -56,6 +70,7 @@ public class RDD implements Comparable<RDD> {
 
         storageLevelHistory = new LinkedList<>();
         usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0};
+        hasBeenCached = false;
 
         cacheState = CacheState.NONE;
         if (isAnnotated()) {
@@ -125,6 +140,7 @@ public class RDD implements Comparable<RDD> {
         Partition partition = partitions.get(partitionId);
         partition.updateStatus(statusJson);
         if (partition.isCached()) {
+            hasBeenCached = true;
             numCachedPartitions++;
             cacheState = CacheState.CACHED;
         } else {
@@ -168,7 +184,11 @@ public class RDD implements Comparable<RDD> {
                 case ANNOTATED:
                     // anotated but nothing was in cache
 //                    System.out.println("USE OF EMPTY RDD " + Integer.toString(rddId) + " BY STAGE " + Integer.toString(stageId));
-                    index = 3;
+                    index = 2;
+                    if (hasBeenCached) {
+                        // evicted
+                        index = 3;
+                    }
                     break;
                 case UNPERSISTED:
                     // unpersisted
@@ -218,7 +238,7 @@ public class RDD implements Comparable<RDD> {
     }
 
     public void print(String tab) {
-        System.out.println(tab + "RDD ID : " + Integer.toString(rddId));
+        System.out.println(tab + "RDD ID : " + Integer.toString(rddId) + " (" + callsite + ") : ");
         storageLevel.print(tab + "  ");
 
         if (partitions.size() > 0) {
@@ -232,11 +252,11 @@ public class RDD implements Comparable<RDD> {
     public void printCacheStatus(String tab) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(tab + "RDD " + Integer.toString(rddId) + " : ");
+        sb.append(tab + "RDD " + Integer.toString(rddId) + " (" + callsite + ") : ");
 
         switch (cacheState) {
             case ANNOTATED:
-                sb.append("ANNOTATED");
+                sb.append("ANNOTATED (" + numPartitions + ")");
                 break;
             case UNPERSISTED:
                 // unpersisted
@@ -245,10 +265,11 @@ public class RDD implements Comparable<RDD> {
             case CACHED:
                 if (numPartitions == numCachedPartitions) {
                     // fully stored
-                    sb.append("FULLY CACHED");
+                    sb.append("FULLY CACHED (" + numPartitions + ")");
                 } else {
                     // partially in cache
-                    sb.append("PARTIALLY CACHED");
+                    sb.append("PARTIALLY CACHED (");
+                    sb.append(numCachedPartitions + "/" + numPartitions + ")");
                 }
                 break;
             case NONE:

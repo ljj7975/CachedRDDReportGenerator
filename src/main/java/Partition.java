@@ -10,7 +10,7 @@ public class Partition {
     int memorySize;
     int diskSize;
     StorageLevel storageLevel;                              // physical cache status
-    Queue<StorageLevel> history;
+    Queue<StorageLevel> storageLevelHistory;
 
     public Partition(int index) {
         this.index = index;
@@ -18,7 +18,7 @@ public class Partition {
         this.storageLevel = new StorageLevel(false, false, false, 0);
         this.memorySize = 0;
         this.diskSize = 0;
-        this.history = new LinkedList<>();
+        this.storageLevelHistory = new LinkedList<>();
     }
 
     // getter
@@ -31,7 +31,7 @@ public class Partition {
         JsonObject storageLevelJson = (JsonObject) statusJson.get("Storage Level");
         StorageLevel prev = this.storageLevel;
         this.storageLevel = new StorageLevel(storageLevelJson);
-        this.history.add(prev);
+        this.storageLevelHistory.add(prev);
         this.memorySize = ((BigDecimal) statusJson.get("Memory Size")).intValue();
         this.diskSize = ((BigDecimal) statusJson.get("Disk Size")).intValue();
 
@@ -40,10 +40,6 @@ public class Partition {
     // print
     public void print() {
         print("");
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     public void print(String tab) {

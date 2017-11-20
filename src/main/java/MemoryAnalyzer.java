@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -92,21 +93,27 @@ public class MemoryAnalyzer {
 
                 case "SparkListenerUnpersistRDD":
                     int rddId = ((BigDecimal) event.get("RDD ID")).intValue();
-                    RDDs.get(rddId).unpersist();
+                    if (RDDs.containsKey(rddId)) {
+                        // RDDs can be made but doesn't get used at all
+                        // Do RDD actually gets created??
+                        RDDs.get(rddId).unpersist();
+                    }
 
 //                    To check when rdd gets unpersisted
                     System.out.println(" Unpersist is called on RDD " + Integer.valueOf(rddId));
                     break;
 
                 case "SparkListenerJobEnd":
+//                    currentJob.printCacheStatus();
                     currentJob = null;
                     break;
 
             }
         }
 
-        printRDDUsageReport();
 //        printRDDSummaryReport();
+        printRDDUsageReport();
+
     }
 
     // print
@@ -152,7 +159,19 @@ public class MemoryAnalyzer {
         if (args.length > 0) {
             fileName = args[0];
         } else {
-            fileName = "src/main/resources/sample_log.log";
+            // TODO :: grab spark config, find where data gets loaded, grab most recent log
+            // right now, the default is /tmp/spark-events
+            File folder = new File("/tmp/spark-events");
+            File[] listOfFiles = folder.listFiles();
+
+//            for (File f : listOfFiles) {
+//                System.out.println(f.getName());
+//            }
+
+            fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
+//            fileName = "src/main/resources/sample_log.log";
+
+            System.out.println(fileName);
         }
 
         JsonArray jsonOutput = null;
