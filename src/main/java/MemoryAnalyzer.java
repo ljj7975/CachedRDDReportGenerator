@@ -94,8 +94,6 @@ public class MemoryAnalyzer {
                 case "SparkListenerUnpersistRDD":
                     int rddId = ((BigDecimal) event.get("RDD ID")).intValue();
                     if (RDDs.containsKey(rddId)) {
-                        // RDDs can be made but doesn't get used at all
-                        // Do RDD actually gets created??
                         RDDs.get(rddId).unpersist();
                     }
 
@@ -159,14 +157,13 @@ public class MemoryAnalyzer {
         if (args.length > 0) {
             fileName = args[0];
         } else {
-            // TODO :: grab spark config, find where data gets loaded, grab most recent log
-            // right now, the default is /tmp/spark-events
             File folder = new File("/tmp/spark-events");
             File[] listOfFiles = folder.listFiles();
 
-//            for (File f : listOfFiles) {
-//                System.out.println(f.getName());
-//            }
+            if (listOfFiles.length == 0) {
+                System.err.println("No log file exist");
+                return;
+            }
 
             fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
 //            fileName = "src/main/resources/sample_log.log";
