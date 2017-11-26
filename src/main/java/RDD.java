@@ -289,13 +289,12 @@ public class RDD implements Comparable<RDD> {
     }
 
     public void printUsage() {
-        StringBuffer sb = new StringBuffer("RDD " + Integer.toString(rddId) + " { ");
+        StringBuffer sb = new StringBuffer(Integer.toString(rddId) + " ");
 
         for (int i : usageInfo) {
             sb.append(i);
             sb.append(" ");
         }
-        sb.append("}");
 
         if (usageInfo[2] > 5) {
             sb.append(" - better to cache");

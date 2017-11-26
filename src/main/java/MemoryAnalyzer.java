@@ -141,7 +141,7 @@ public class MemoryAnalyzer {
         System.out.println("// index 6 - not cached, but OK because stage descendant was cached");
         System.out.println();
 
-        System.out.println("Total number of " + Integer.toString(RDDs.size()) + " RDDs");
+        System.out.println("Number of RDD : " + Integer.toString(RDDs.size()));
         System.out.println();
 
         for (Map.Entry<Integer, RDD> entry : RDDs.entrySet()) {
@@ -169,7 +169,7 @@ public class MemoryAnalyzer {
             fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
 //            fileName = "src/main/resources/sample_log.log";
 
-            System.out.println(fileName);
+            System.out.println("log file : " + fileName);
         }
 
         JsonArray jsonOutput = null;
