@@ -154,6 +154,7 @@ public class MemoryAnalyzer {
     // main
     public static void main(String[] args) {
         String fileName;
+        // TODO :: support both Directory / Log File argument
         if (args.length > 0) {
             fileName = args[0];
         } else {
@@ -161,7 +162,7 @@ public class MemoryAnalyzer {
             File[] listOfFiles = folder.listFiles();
 
             if (listOfFiles.length == 0) {
-                System.err.println("No log file exist");
+                System.err.println("No log file exist in /tmp/spark-events, please provide log file");
                 return;
             }
 
