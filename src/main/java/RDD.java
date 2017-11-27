@@ -67,7 +67,6 @@ public class RDD implements Comparable<RDD> {
         parents = new LinkedList<>();
         partitions = new HashMap<>();
         usageCounter = new HashMap<>();
-        descendantCached = true;
 
         storageLevelHistory = new LinkedList<>();
         usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
@@ -201,10 +200,10 @@ public class RDD implements Comparable<RDD> {
                 case CACHED:
                     // used to notify ancestors
                     // if you want to only keep track fully stored cached, put this inside of following if case
-                    this.descendantCached = true;
                     if (numPartitions == numCachedPartitions) {
                         // fully stored
                         index = 1;
+                        this.descendantCached = true;
                     } else {
                         // partially in cache
                         index = 2;

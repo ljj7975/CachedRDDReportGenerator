@@ -132,14 +132,15 @@ public class MemoryAnalyzer {
     private void printRDDUsageReport() {
         System.out.println("======== RDD USAGE =======");
         System.out.println();
-        System.out.println("// index 0 - first use of cached RDD");
-        System.out.println("// index 1 - was cached when re-used");
-        System.out.println("// index 2 - was partially cached when re-used");
-        System.out.println("// index 3 - not cached when reused, because app didn't cache");
-        System.out.println("// index 4 - not cached when reused, because had been evicted before re-use");
-        System.out.println("// index 5 - not cached when reused, because had been unpersisted before re-use");
-        System.out.println("// index 6 - cached, but not used because stage descendant was cached");
-        System.out.println("// index 7 - not cached, but OK because stage descendant was cached");
+        System.out.println("// index 0 - RDD id");
+        System.out.println("// index 1 - first use of cached RDD");
+        System.out.println("// index 2 - was cached when re-used");
+        System.out.println("// index 3 - was partially cached when re-used");
+        System.out.println("// index 4 - not cached when reused, because app didn't cache");
+        System.out.println("// index 5 - not cached when reused, because had been evicted before re-use");
+        System.out.println("// index 6 - not cached when reused, because had been unpersisted before re-use");
+        System.out.println("// index 7 - cached, but not used because stage descendant was cached");
+        System.out.println("// index 8 - not cached, but OK because stage descendant was cached");
         System.out.println();
 
         System.out.println("Number of RDD : " + Integer.toString(RDDs.size()));
@@ -175,6 +176,7 @@ public class MemoryAnalyzer {
 
         JsonArray jsonOutput = null;
 
+        // TODO :: read json object one by one to save memory
         try {
             FileReader fileReader = new FileReader(fileName);
             jsonOutput = Jsoner.deserializeMany(fileReader);
