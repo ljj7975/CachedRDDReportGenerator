@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -23,94 +20,87 @@ public class MemoryAnalyzer {
         RDDs = new HashMap<>();
     }
 
-    private void analyze(JsonArray events) {
-        JsonObject event;
-        for (Object json : events) {
-            event = (JsonObject) json;
-            String eventType = (String) event.get("Event");
-            int stageId;
-            switch (eventType) {
-                case "SparkListenerJobStart":
-                    // create a job & stages for this job
-                    Job job = new Job(event, RDDs);
-                    jobs.put(job.getId(), job);
-                    currentJob = job;
-                    break;
+    private void analyze(JsonObject event) {
+        String eventType = (String) event.get("Event");
+        int stageId;
+        switch (eventType) {
+            case "SparkListenerJobStart":
+                // create a job & stages for this job
+                Job job = new Job(event, RDDs);
+                jobs.put(job.getId(), job);
+                currentJob = job;
+                break;
 
-                case "SparkListenerStageSubmitted":
-                    //update current stage
-                    JsonObject stageInfoJson = (JsonObject) event.get("Stage Info");
-//                    stageId = ((BigDecimal) stageInfoJson.get("Stage ID")).intValue();
-//                    currentStage = currentJob.getStage(stageId);
-//                    currentStage.printCacheStatus("  ");
-                    break;
+            case "SparkListenerStageSubmitted":
+                //update current stage
+                JsonObject stageInfoJson = (JsonObject) event.get("Stage Info");
+    //          stageId = ((BigDecimal) stageInfoJson.get("Stage ID")).intValue();
+    //          currentStage = currentJob.getStage(stageId);
+    //          currentStage.printCacheStatus("  ");
+                break;
 
-                case "SparkListenerTaskStart":
-                    // # tasks = # partitions for each RDD
-                    // create partition index for partition id
-                    stageId = ((BigDecimal) event.get("Stage ID")).intValue();
-                    JsonObject taskInfoJson = (JsonObject) event.get("Task Info");
-                    int taskIndex = ((BigDecimal) taskInfoJson.get("Index")).intValue();
-                    currentJob.createPartition(stageId, taskIndex);
-                    break;
+            case "SparkListenerTaskStart":
+                // # tasks = # partitions for each RDD
+                // create partition index for partition id
+                stageId = ((BigDecimal) event.get("Stage ID")).intValue();
+                JsonObject taskInfoJson = (JsonObject) event.get("Task Info");
+                int taskIndex = ((BigDecimal) taskInfoJson.get("Index")).intValue();
+                currentJob.createPartition(stageId, taskIndex);
+                break;
 
-                case "SparkListenerTaskEnd":
-                    // SparkListenerTaskEnd contains Updated Block information
-                    // contains information regarding change in cache
-                    // collect and update the current status of the status
+            case "SparkListenerTaskEnd":
+                // SparkListenerTaskEnd contains Updated Block information
+                // contains information regarding change in cache
+                // collect and update the current status of the status
 
-                    JsonObject taskMetricsJson = (JsonObject) event.get("Task Metrics");
-                    JsonArray updatedBlocks = (JsonArray) taskMetricsJson.get("Updated Blocks");
+                JsonObject taskMetricsJson = (JsonObject) event.get("Task Metrics");
+                JsonArray updatedBlocks = (JsonArray) taskMetricsJson.get("Updated Blocks");
 
-                    JsonUtil util = JsonUtil.getInstance();
-                    List<JsonObject> sortedUpdatedBlocks = util.sortJsonArray(updatedBlocks, "Block ID");
+                JsonUtil util = JsonUtil.getInstance();
+                List<JsonObject> sortedUpdatedBlocks = util.sortJsonArray(updatedBlocks, "Block ID");
 
-                    for (JsonObject updatedBlock : sortedUpdatedBlocks) {
-                        String blockId = (String) updatedBlock.get("Block ID");
-                        String[] word = blockId.split("_");
-                        if (word[0].equals("rdd")) {
-                            // only interested in rdd block storage information
-                            int originalRDD = Integer.parseInt(word[1]);
-                            int partitionId = Integer.parseInt(word[2]);
+                for (JsonObject updatedBlock : sortedUpdatedBlocks) {
+                    String blockId = (String) updatedBlock.get("Block ID");
+                    String[] word = blockId.split("_");
+                    if (word[0].equals("rdd")) {
+                        // only interested in rdd block storage information
+                        int originalRDD = Integer.parseInt(word[1]);
+                        int partitionId = Integer.parseInt(word[2]);
 
-                            RDD rdd = RDDs.get(originalRDD);
-                            JsonObject statusJson = (JsonObject) updatedBlock.get("Status");
-                            rdd.updatePartitionStatus(partitionId, statusJson);
+                        RDD rdd = RDDs.get(originalRDD);
+                        JsonObject statusJson = (JsonObject) updatedBlock.get("Status");
+                        rdd.updatePartitionStatus(partitionId, statusJson);
 
-//                            To check when rdd block gets evicted
-//                            if (rdd.getPartition(partitionId).isCached()) {
-//                                System.out.println(blockId + " is now in cache by Task " + Integer.valueOf(taskId));
-//                            } else {
-//                                System.out.println(blockId + " is evicted from cache by Task " + Integer.valueOf(taskId));
-//                            }
-                        }
+    //                  To check when rdd block gets evicted
+    //                  if (rdd.getPartition(partitionId).isCached()) {
+    //                      System.out.println(blockId + " is now in cache by Task " + Integer.valueOf(taskId));
+    //                  } else {
+    //                      System.out.println(blockId + " is evicted from cache by Task " + Integer.valueOf(taskId));
+    //                  }
                     }
-                    break;
+                }
+                break;
 
-                case "SparkListenerStageCompleted":
-//                    currentStage = null;
-                    break;
+            case "SparkListenerStageCompleted":
+    //          currentStage = null;
+                break;
 
-                case "SparkListenerUnpersistRDD":
-                    int rddId = ((BigDecimal) event.get("RDD ID")).intValue();
-                    if (RDDs.containsKey(rddId)) {
-                        RDDs.get(rddId).unpersist();
-                    }
+            case "SparkListenerUnpersistRDD":
+                int rddId = ((BigDecimal) event.get("RDD ID")).intValue();
+                if (RDDs.containsKey(rddId)) {
+                    RDDs.get(rddId).unpersist();
+                }
 
-//                    To check when rdd gets unpersisted
-                    System.out.println(" Unpersist is called on RDD " + Integer.valueOf(rddId));
-                    break;
+    //          To check when rdd gets unpersisted
+                System.out.println(" Unpersist is called on RDD " + Integer.valueOf(rddId));
+                break;
 
-                case "SparkListenerJobEnd":
-//                    currentJob.printCacheStatus();
-                    currentJob = null;
-                    break;
+            case "SparkListenerJobEnd":
+    //          currentJob.printCacheStatus();
+                currentJob = null;
+                break;
 
-            }
         }
-
-//        printRDDSummaryReport();
-        printRDDUsageReport();
 
     }
 
@@ -174,23 +164,34 @@ public class MemoryAnalyzer {
             System.out.println("log file : " + fileName);
         }
 
-        JsonArray jsonOutput = null;
-
-        // TODO :: read json object one by one to save memory
         try {
             FileReader fileReader = new FileReader(fileName);
-            jsonOutput = Jsoner.deserializeMany(fileReader);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            MemoryAnalyzer memoryAnalyzer = new MemoryAnalyzer();
+            String line = null;
+
+            while((line = bufferedReader.readLine()) != null) {
+
+                JsonObject jsonObject = (JsonObject) Jsoner.deserialize(line);
+                memoryAnalyzer.analyze(jsonObject);
+            }
+
+            bufferedReader.close();
+
+//            memoryAnalyzer.printRDDSummaryReport();
+            memoryAnalyzer.printRDDUsageReport();
+
         } catch (final DeserializationException caught) {
-            /* Oops, json input didn't work. */
-            jsonOutput = null;
+            System.err.println("Invalid json array log");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.err.println(fileName + " does not exist");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        MemoryAnalyzer memoryAnalyzer = new MemoryAnalyzer();
-        memoryAnalyzer.analyze(jsonOutput);
     }
 
 }
