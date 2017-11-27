@@ -14,7 +14,7 @@ public class RDD implements Comparable<RDD> {
     int numCachedPartitions;
     int memorySize;
     int diskSize;
-    boolean hasBeenCached;                                  // whether partition has been physically cached or not
+    boolean firstUse;                                       // whether partition has been physically cached or not
 
     List<StorageLevel> storageLevelHistory;
 
@@ -71,7 +71,7 @@ public class RDD implements Comparable<RDD> {
 
         storageLevelHistory = new LinkedList<>();
         usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-        hasBeenCached = false;
+        firstUse = true;
 
         cacheState = CacheState.NONE;
         if (isAnnotated()) {
@@ -141,7 +141,6 @@ public class RDD implements Comparable<RDD> {
         Partition partition = partitions.get(partitionId);
         partition.updateStatus(statusJson);
         if (partition.isCached()) {
-            hasBeenCached = true;
             numCachedPartitions++;
             cacheState = CacheState.CACHED;
         } else {
@@ -186,11 +185,12 @@ public class RDD implements Comparable<RDD> {
                 case ANNOTATED:
                     // anotated but nothing was in cache
 //                    System.out.println("USE OF EMPTY RDD " + Integer.toString(rddId) + " BY STAGE " + Integer.toString(stageId));
-                    index = 0;
-                    if (hasBeenCached) {
+                    index = 4;
+                    if (firstUse) {
                         // TODO :: not that has been cached might not be true second time if it was not cached first time
                         // evicted
-                        index = 4;
+                        index = 0;
+                        firstUse = false;
                     }
                     break;
                 case UNPERSISTED:
