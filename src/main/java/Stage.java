@@ -64,7 +64,7 @@ public class Stage {
         }
 
 //        printCacheStatus("  ");
-        rdd.updateStateCounter(stageId, false, stageRDDs.keySet());
+        rdd.updateUsageCounter(stageId, false, stageRDDs.keySet());
 
     }
 

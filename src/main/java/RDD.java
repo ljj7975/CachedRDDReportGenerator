@@ -30,13 +30,14 @@ public class RDD implements Comparable<RDD> {
     boolean descendantCached;
 
     int[] usageInfo;
-    // index 0 - was cached when re-used
-    // index 1 - was partially cached when re-used
-    // index 2 - not cached when reused, because app didn't cache
-    // index 3 - not cached when reused, because had been evicted before re-use
-    // index 4 - not cached when reused, because had been unpersisted before re-use
-    // index 5 - cached, but not used because stage descendant was cached
-    // index 6 - not cached, but OK because stage descendant was cached
+    // index 0 - first use of cached RDD
+    // index 1 - was cached when re-used
+    // index 2 - was partially cached when re-used
+    // index 3 - not cached when reused, because app didn't cache
+    // index 4 - not cached when reused, because had been evicted before re-use
+    // index 5 - not cached when reused, because had been unpersisted before re-use
+    // index 6 - cached, but not used because stage descendant was cached
+    // index 7 - not cached, but OK because stage descendant was cached
 
     public RDD(JsonObject rddJson) {
         rddId = ((BigDecimal) rddJson.get("RDD ID")).intValue();
@@ -69,7 +70,7 @@ public class RDD implements Comparable<RDD> {
         descendantCached = true;
 
         storageLevelHistory = new LinkedList<>();
-        usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0};
+        usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
         hasBeenCached = false;
 
         cacheState = CacheState.NONE;
@@ -151,15 +152,16 @@ public class RDD implements Comparable<RDD> {
         }
     }
 
-    public void updateStateCounter(int stageId, Boolean descendantCached, Set<Integer> stageRdds) {
+    public void updateUsageCounter(int stageId, Boolean descendantCached, Set<Integer> stageRdds) {
 
-        // index 0 - was cached when re-used
-        // index 1 - was partially cached when re-used
-        // index 2 - not cached when reused, because app didn't cache
-        // index 3 - not cached when reused, because had been evicted before re-use
-        // index 4 - not cached when reused, because had been unpersisted before re-use
-        // index 5 - cached, but not used because stage descendant was cached
-        // index 6 - not cached, but OK because stage descendant was cached
+        // index 0 - first use of cached RDD
+        // index 1 - was cached when re-used
+        // index 2 - was partially cached when re-used
+        // index 3 - not cached when reused, because app didn't cache
+        // index 4 - not cached when reused, because had been evicted before re-use
+        // index 5 - not cached when reused, because had been unpersisted before re-use
+        // index 6 - cached, but not used because stage descendant was cached
+        // index 7 - not cached, but OK because stage descendant was cached
 
         usageCounter.put(stageId, usageCounter.get(stageId) - 1);
         this.descendantCached = descendantCached;
@@ -174,26 +176,27 @@ public class RDD implements Comparable<RDD> {
         if (this.descendantCached) {
             if (cacheState == CacheState.CACHED) {
                 // cached, but not used because stage descendant was cached
-                index = 5;
+                index = 6;
             } else {
                 // not cached, but OK because stage descendant was cached
-                index = 6;
+                index = 7;
             }
         } else {
             switch (cacheState) {
                 case ANNOTATED:
                     // anotated but nothing was in cache
 //                    System.out.println("USE OF EMPTY RDD " + Integer.toString(rddId) + " BY STAGE " + Integer.toString(stageId));
-                    index = 2;
+                    index = 0;
                     if (hasBeenCached) {
+                        // TODO :: not that has been cached might not be true second time if it was not cached first time
                         // evicted
-                        index = 3;
+                        index = 4;
                     }
                     break;
                 case UNPERSISTED:
                     // unpersisted
 //                    System.out.println("USE OF UNPERSISTED RDD " + Integer.toString(rddId) + " BY STAGE " + Integer.toString(stageId));
-                    index = 4;
+                    index = 5;
                     break;
                 case CACHED:
                     // used to notify ancestors
@@ -201,14 +204,14 @@ public class RDD implements Comparable<RDD> {
                     this.descendantCached = true;
                     if (numPartitions == numCachedPartitions) {
                         // fully stored
-                        index = 0;
+                        index = 1;
                     } else {
                         // partially in cache
-                        index = 1;
+                        index = 2;
                     }
                     break;
                 case NONE:
-                    index = 2;
+                    index = 3;
                     break;
             }
         }
@@ -227,7 +230,7 @@ public class RDD implements Comparable<RDD> {
 
         if (recursion) {
             for (RDD parent : parents) {
-                parent.updateStateCounter(stageId, this.descendantCached, stageRdds);
+                parent.updateUsageCounter(stageId, this.descendantCached, stageRdds);
             }
         }
     }
@@ -296,52 +299,47 @@ public class RDD implements Comparable<RDD> {
             sb.append(" ");
         }
 
-        if (usageInfo[2] > 5) {
-            sb.append(" - better to cache");
-        } else if (usageInfo[3] > 1) {
-            sb.append(" - partitions not in cache");
-        } else if (usageInfo[4] > 1) {
-            sb.append(" - use of unpersisted cache");
-        }
-
-
         System.out.println(sb.toString());
     }
 
     private void printUsageInfo(int index) {
-        // index 0 - was cached when re-used
-        // index 1 - was partially cached when re-used
-        // index 2 - not cached when reused, because app didn't cache
-        // index 3 - not cached when reused, because had been evicted before re-use
-        // index 4 - not cached when reused, because had been unpersisted before re-use
-        // index 5 - cached, but not used because stage descendant was cached
-        // index 6 - not cached, but OK because stage descendant was cached
+        // index 0 - first use of cached RDD
+        // index 1 - was cached when re-used
+        // index 2 - was partially cached when re-used
+        // index 3 - not cached when reused, because app didn't cache
+        // index 4 - not cached when reused, because had been evicted before re-use
+        // index 5 - not cached when reused, because had been unpersisted before re-use
+        // index 6 - cached, but not used because stage descendant was cached
+        // index 7 - not cached, but OK because stage descendant was cached
 
         StringBuilder sb = new StringBuilder();
         sb.append("     RDD " + Integer.toString(rddId) + " : ");
         switch (index) {
             case 0:
-                sb.append("All partitions are in cache on ");
+                sb.append("First use of cached RDD");
                 break;
             case 1:
+                sb.append("All partitions are in cache");
+                break;
+            case 2:
                 sb.append(numCachedPartitions);
                 sb.append("/");
                 sb.append(numPartitions);
-                sb.append(" partitions are in cache on ");
-                break;
-            case 2:
-                sb.append("Not cached because not annotated");
+                sb.append(" partitions are in cache");
                 break;
             case 3:
-                sb.append("Annotated but no partition is in cache");
+                sb.append("Not cached because not annotated");
                 break;
             case 4:
-                sb.append("Previously cached, but unpersisted");
+                sb.append("Annotated but no partition is in cache");
                 break;
             case 5:
-                sb.append("Not cached but stage descendant was cached");
+                sb.append("Previously cached, but unpersisted");
                 break;
             case 6:
+                sb.append("Not cached but stage descendant was cached");
+                break;
+            case 7:
                 sb.append("not cached, but OK because stage descendant was cached");
                 break;
             default:
