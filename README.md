@@ -31,7 +31,7 @@ Usage report contains RDD id and 7 counters where each counter represents differ
 * index 5 - not cached when reused, because had been evicted before re-use
 * index 6 - not cached when reused, because had been unpersisted before re-use
 * index 7 - cached, but not used because stage descendant was cached
-* index 8 - not cached, but OK because stage descendant was cached
+* index 8 - not cached or partially cached, but it is okay because descendants are cached
 
 
 ### sample usage report
