@@ -6,7 +6,7 @@ Jaejun (Brandon) Lee, j474lee@edu.uwaterloo.ca
 
 ## Background
 In order to take advatnage of full functionality of Spark, maximizing use of cached RDD is very important
-However, current version of Spark does not provide any informations regarding status of caches as porgram gets executed
+However, with current version of Spark, it is very challenging to analyze gain from cached RDD
 CachedRDDReportGenerator is designed to provide a way of interpretting current use of cached RDD by generating an usage report using Spark Event Logs
 
 ## Build steps
@@ -43,4 +43,7 @@ Usage report contains RDD id and 7 counters where each counter represents differ
 
 ## Relevent Research
 CachedRDDReportGenerator is developed as part of a research directed by Ken Salem (cs.uwaterloo.ca/~kmsalem/) with assistent of Michael Mior
-The research involves evaluating cache mechanisms of Spark by analzying current cache efficiency
+
+In Spark, if RDD is expected to be used in near future, user can prevent recomputing same RDD by caching it.
+However, eviction of cached RDD is not controlled by user and Spark simply follows LRU caching mechanism.
+The main focus of the research is to see if we can design better caching mechanism that works better in Spark computing model by analyzing how LRU caching mechanism fits with Spark
