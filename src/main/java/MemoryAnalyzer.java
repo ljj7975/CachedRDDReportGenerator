@@ -15,7 +15,7 @@ public class MemoryAnalyzer {
     Job currentJob;
 //    private Stage currentStage;
 
-    private MemoryAnalyzer() {
+    public MemoryAnalyzer() {
         jobs = new HashMap<>();
         RDDs = new HashMap<>();
     }
@@ -96,7 +96,7 @@ public class MemoryAnalyzer {
                 break;
 
             case "SparkListenerJobEnd":
-    //          currentJob.printCacheStatus();
+//              currentJob.printCacheStatus();
                 currentJob = null;
                 break;
 
@@ -105,7 +105,7 @@ public class MemoryAnalyzer {
     }
 
     // print
-    private void printRDDSummaryReport() {
+    public void printRDDSummaryReport() {
         System.out.println("======== RDD SUMMARY =======");
         System.out.println();
         System.out.println("// RDD informations for each stage and jobs");
@@ -119,7 +119,7 @@ public class MemoryAnalyzer {
         System.out.println("==============================");
     }
 
-    private void printRDDUsageReport() {
+    public void printRDDUsageReport() {
         System.out.println("======== RDD USAGE =======");
         System.out.println();
         System.out.println("// index 0 - RDD id");
@@ -143,6 +143,35 @@ public class MemoryAnalyzer {
         System.out.println("==============================");
     }
 
+    public void runAnalysis(String fileName) {
+        try {
+            FileReader fileReader = new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            String line = null;
+
+            while((line = bufferedReader.readLine()) != null) {
+
+                JsonObject jsonObject = (JsonObject) Jsoner.deserialize(line);
+                analyze(jsonObject);
+            }
+
+            bufferedReader.close();
+
+//            memoryAnalyzer.printRDDSummaryReport();
+            printRDDUsageReport();
+
+        } catch (final DeserializationException caught) {
+            System.err.println("Invalid json array log");
+        } catch (FileNotFoundException e) {
+            System.err.println(fileName + " does not exist");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // main
     public static void main(String[] args) {
         String fileName;
@@ -158,40 +187,14 @@ public class MemoryAnalyzer {
                 return;
             }
 
-            fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
-//            fileName = "src/main/resources/sample_log.log";
+//            fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
+            fileName = "src/main/resources/sample_log.log";
 
             System.out.println("log file : " + fileName);
         }
 
-        try {
-            FileReader fileReader = new FileReader(fileName);
-
-            // Always wrap FileReader in BufferedReader.
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-            MemoryAnalyzer memoryAnalyzer = new MemoryAnalyzer();
-            String line = null;
-
-            while((line = bufferedReader.readLine()) != null) {
-
-                JsonObject jsonObject = (JsonObject) Jsoner.deserialize(line);
-                memoryAnalyzer.analyze(jsonObject);
-            }
-
-            bufferedReader.close();
-
-//            memoryAnalyzer.printRDDSummaryReport();
-            memoryAnalyzer.printRDDUsageReport();
-
-        } catch (final DeserializationException caught) {
-            System.err.println("Invalid json array log");
-        } catch (FileNotFoundException e) {
-            System.err.println(fileName + " does not exist");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        MemoryAnalyzer memoryAnalyzer = new MemoryAnalyzer();
+        memoryAnalyzer.runAnalysis(fileName);
     }
 
 }
