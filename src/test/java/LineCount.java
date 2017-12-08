@@ -9,7 +9,13 @@ public class LineCount {
     Function<String, Boolean> filterB;
 
     public void test1() {
-        // Define a configuration to use to interact with Spark
+        // this test case triggers
+        //      index 1 - first use of cached RDD
+        //      index 2 - was cached when re-used
+        //      index 4 - RDD without cache annotation
+        //      index 7 - cached, but not used because stage descendant was cached
+        //      index 8 - not cached, but OK because stage descendant was cached
+
         SparkConf conf = new SparkConf().setMaster("local").setAppName("Test1");
         conf.set("spark.eventLog.enabled", "true");
         conf.set("spark.memory.fraction", "0.5");
@@ -27,7 +33,11 @@ public class LineCount {
     }
 
     public void test2() {
-        // Define a configuration to use to interact with Spark
+        // this test case triggers
+        //      index 1 - first use of cached RDD
+        //      index 3 - was partially cached when re-used
+        //      index 4 - not cached when reused, because app didn't cache
+
         SparkConf conf = new SparkConf().setMaster("local").setAppName("Test2");
         conf.set("spark.eventLog.enabled", "true");
         conf.set("spark.memory.fraction", "0.2");
@@ -45,7 +55,11 @@ public class LineCount {
     }
 
     public void test3() {
-        // Define a configuration to use to interact with Spark
+        // this test case triggers
+        //      index 1 - first use of cached RDD
+        //      index 4 - not cached when reused, because app didn't cache
+        //      index 5 - not cached when reused, because had been evicted before re-use
+
         SparkConf conf = new SparkConf().setMaster("local").setAppName("Test3");
         conf.set("spark.eventLog.enabled", "true");
         conf.set("spark.memory.fraction", "0.1");
@@ -65,7 +79,11 @@ public class LineCount {
     }
 
     public void test4() {
-        // Define a configuration to use to interact with Spark
+        // this test case triggers
+        //      index 1 - first use of cached RDD
+        //      index 4 - not cached when reused, because app didn't cache
+        //      index 6 - not cached when reused, because had been unpersisted before re-use
+
         SparkConf conf = new SparkConf().setMaster("local").setAppName("Test3");
         conf.set("spark.eventLog.enabled", "true");
         conf.set("spark.memory.fraction", "0.3");

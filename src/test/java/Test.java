@@ -28,7 +28,7 @@ public class Test {
 
         System.out.println();
         System.out.println("testing cases:");
-        System.out.println("    index 1 : first use of cached RDD");
+        System.out.println("    index 1 - first use of cached RDD");
         System.out.println("    index 2 - was cached when re-used");
         System.out.println("    index 4 - RDD without cache annotation");
         System.out.println("    index 7 - cached, but not used because stage descendant was cached");
@@ -51,7 +51,7 @@ public class Test {
 
         System.out.println();
         System.out.println("testing cases:");
-        System.out.println("    index 1 : first use of cached RDD");
+        System.out.println("    index 1 - first use of cached RDD");
         System.out.println("    index 3 - was partially cached when re-used");
         System.out.println("    index 4 - not cached when reused, because app didn't cache");
         System.out.println();
@@ -72,7 +72,7 @@ public class Test {
 
         System.out.println();
         System.out.println("testing cases:");
-        System.out.println("    index 1 : first use of cached RDD");
+        System.out.println("    index 1 - first use of cached RDD");
         System.out.println("    index 4 - not cached when reused, because app didn't cache");
         System.out.println("    index 5 - not cached when reused, because had been evicted before re-use");
         System.out.println();
@@ -92,7 +92,7 @@ public class Test {
 
         System.out.println();
         System.out.println("testing cases:");
-        System.out.println("    index 1 : first use of cached RDD");
+        System.out.println("    index 1 - first use of cached RDD");
         System.out.println("    index 4 - not cached when reused, because app didn't cache");
         System.out.println("    index 6 - not cached when reused, because had been unpersisted before re-use");
         System.out.println();
