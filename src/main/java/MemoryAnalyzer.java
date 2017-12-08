@@ -96,7 +96,7 @@ public class MemoryAnalyzer {
                 break;
 
             case "SparkListenerJobEnd":
-//              currentJob.printCacheStatus();
+//                currentJob.printCacheStatus();
                 currentJob = null;
                 break;
 
@@ -187,8 +187,8 @@ public class MemoryAnalyzer {
                 return;
             }
 
-//            fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
-            fileName = "src/main/resources/sample_log.log";
+            fileName = "/tmp/spark-events/"+listOfFiles[listOfFiles.length-1].getName();
+//            fileName = "src/main/resources/sample_log.log";
 
             System.out.println("log file : " + fileName);
         }

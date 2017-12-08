@@ -1,9 +1,31 @@
 group 'ura'
 version '1.0-SNAPSHOT'
 
-apply plugin: 'java'
 
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "de.undercouch:gradle-download-task:3.3.0"
+    }
+}
+
+apply plugin: 'de.undercouch.download'
+
+import de.undercouch.gradle.tasks.download.Download
+
+task downloadTestFile(type: Download) {
+    src 'https://dumps.wikimedia.org/other/static_html_dumps/December_2006/en/html.lst'
+    dest '/tmp/wiki_test.html'
+}
+
+apply plugin: 'java'
 sourceCompatibility = 1.8
+
+downloadTestFile.dependsOn testClasses
 
 repositories {
     mavenCentral()
@@ -21,3 +43,6 @@ jar {
         attributes 'Main-Class': 'MemoryAnalyzer'
     }
 }
+
+
+
