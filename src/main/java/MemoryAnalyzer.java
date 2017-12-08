@@ -120,13 +120,14 @@ public class MemoryAnalyzer {
     }
 
     public void printRDDUsageReport() {
+
         System.out.println("======== RDD USAGE =======");
         System.out.println();
         System.out.println("// index 0 - RDD id");
         System.out.println("// index 1 - first use of cached RDD");
         System.out.println("// index 2 - was cached when re-used");
         System.out.println("// index 3 - was partially cached when re-used");
-        System.out.println("// index 4 - not cached when reused, because app didn't cache");
+        System.out.println("// index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)");
         System.out.println("// index 5 - not cached when reused, because had been evicted before re-use");
         System.out.println("// index 6 - not cached when reused, because had been unpersisted before re-use");
         System.out.println("// index 7 - cached, but not used because stage descendant was cached");

@@ -2,15 +2,15 @@ import java.io.File;
 
 public class Test {
 
-    // index 0 - RDD id
-    // index 1 - first use of cached RDD
-    // index 2 - was cached when re-used
-    // index 3 - was partially cached when re-used
-    // index 4 - not cached when reused, because app didn't cache
-    // index 5 - not cached when reused, because had been evicted before re-use
-    // index 6 - not cached when reused, because had been unpersisted before re-use
-    // index 7 - cached, but not used because stage descendant was cached
-    // index 8 - not cached, but OK because stage descendant was cached
+// index 0 - RDD id
+// index 1 - first use of cached RDD
+// index 2 - was cached when re-used
+// index 3 - was partially cached when re-used
+// index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)
+// index 5 - not cached when reused, because had been evicted before re-use
+// index 6 - not cached when reused, because had been unpersisted before re-use
+// index 7 - cached, but not used because stage descendant was cached
+// index 8 - not cached or partially cached, but it is okay because descendants are cached
 
     public String getLogFileName() {
         File folder = new File("/tmp/spark-events");

@@ -23,15 +23,7 @@ If SparkEventLogFile argument is not specified, most recent log from default eve
 
 ## Detail about Usage Report
 Usage report contains RDD id and 7 counters where each counter represents different use cases of the RDD as following:
-* index 0 - RDD id
-* index 1 - first use of cached RDD
-* index 2 - was cached when re-used
-* index 3 - was partially cached when re-used
-* index 4 - not cached when reused, because app didn't cache
-* index 5 - not cached when reused, because had been evicted before re-use
-* index 6 - not cached when reused, because had been unpersisted before re-use
-* index 7 - cached, but not used because stage descendant was cached
-* index 8 - not cached or partially cached, but it is okay because descendants are cached
+M
 
 
 ### sample usage report

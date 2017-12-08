@@ -30,14 +30,16 @@ public class RDD implements Comparable<RDD> {
     boolean descendantCached;
 
     int[] usageInfo;
-    // index 0 - first use of cached RDD
-    // index 1 - was cached when re-used
-    // index 2 - was partially cached when re-used
-    // index 3 - not cached when reused, because app didn't cache
-    // index 4 - not cached when reused, because had been evicted before re-use
-    // index 5 - not cached when reused, because had been unpersisted before re-use
-    // index 6 - cached, but not used because stage descendant was cached
-    // index 7 - not cached, but OK because stage descendant was cached
+    // index 0 - RDD id
+    // index 1 - first use of cached RDD
+    // index 2 - was cached when re-used
+    // index 3 - was partially cached when re-used
+    // index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)
+    // index 5 - not cached when reused, because had been evicted before re-use
+    // index 6 - not cached when reused, because had been unpersisted before re-use
+    // index 7 - cached, but not used because stage descendant was cached
+    // index 8 - not cached or partially cached, but it is okay because descendants are cached
+
 
     public RDD(JsonObject rddJson) {
         rddId = ((BigDecimal) rddJson.get("RDD ID")).intValue();
@@ -302,14 +304,15 @@ public class RDD implements Comparable<RDD> {
     }
 
     private void printUsageInfo(int index) {
-        // index 0 - first use of cached RDD
-        // index 1 - was cached when re-used
-        // index 2 - was partially cached when re-used
-        // index 3 - not cached when reused, because app didn't cache
-        // index 4 - not cached when reused, because had been evicted before re-use
-        // index 5 - not cached when reused, because had been unpersisted before re-use
-        // index 6 - cached, but not used because stage descendant was cached
-        // index 7 - not cached, but OK because stage descendant was cached
+        // index 0 - RDD id
+        // index 1 - first use of cached RDD
+        // index 2 - was cached when re-used
+        // index 3 - was partially cached when re-used
+        // index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)
+        // index 5 - not cached when reused, because had been evicted before re-use
+        // index 6 - not cached when reused, because had been unpersisted before re-use
+        // index 7 - cached, but not used because stage descendant was cached
+        // index 8 - not cached or partially cached, but it is okay because descendants are cached
 
         StringBuilder sb = new StringBuilder();
         sb.append("     RDD " + Integer.toString(rddId) + " : ");
