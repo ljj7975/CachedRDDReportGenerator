@@ -15,6 +15,7 @@ public class RDD implements Comparable<RDD> {
     int memorySize;
     int diskSize;
     boolean firstUse;                                       // whether partition has been physically cached or not
+    boolean hasBeenCached;                                  // ture if any partition has been cached at least once
 
     List<StorageLevel> storageLevelHistory;
 
@@ -30,15 +31,14 @@ public class RDD implements Comparable<RDD> {
     boolean descendantCached;
 
     int[] usageInfo;
-    // index 0 - RDD id
-    // index 1 - first use of cached RDD
-    // index 2 - was cached when re-used
-    // index 3 - was partially cached when re-used
-    // index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)
-    // index 5 - not cached when reused, because had been evicted before re-use
-    // index 6 - not cached when reused, because had been unpersisted before re-use
-    // index 7 - cached, but not used because stage descendant was cached
-    // index 8 - not cached or partially cached, but it is okay because descendants are cached
+    // index 0 - first use of cached RDD
+    // index 1 - was cached when re-used
+    // index 2 - was partially cached when re-used
+    // index 3 - not cached when reused, because app didn't cache (includes RDD not annotated)
+    // index 4 - not cached when reused, because had been evicted before re-use
+    // index 5 - not cached when reused, because had been unpersisted before re-use
+    // index 6 - cached, but not used because stage descendant was cached
+    // index 7 - not cached or partially cached, but it is okay because descendants are cached
 
 
     public RDD(JsonObject rddJson) {
@@ -73,6 +73,7 @@ public class RDD implements Comparable<RDD> {
         storageLevelHistory = new LinkedList<>();
         usageInfo = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
         firstUse = true;
+        hasBeenCached = false;
 
         cacheState = CacheState.NONE;
         if (isAnnotated()) {
@@ -144,6 +145,7 @@ public class RDD implements Comparable<RDD> {
         if (partition.isCached()) {
             numCachedPartitions++;
             cacheState = CacheState.CACHED;
+            hasBeenCached = true;
         } else {
             numCachedPartitions--;
             if (numCachedPartitions == 0) {
@@ -157,11 +159,11 @@ public class RDD implements Comparable<RDD> {
         // index 0 - first use of cached RDD
         // index 1 - was cached when re-used
         // index 2 - was partially cached when re-used
-        // index 3 - not cached when reused, because app didn't cache
+        // index 3 - not cached when reused, because app didn't cache (includes RDD not annotated)
         // index 4 - not cached when reused, because had been evicted before re-use
         // index 5 - not cached when reused, because had been unpersisted before re-use
         // index 6 - cached, but not used because stage descendant was cached
-        // index 7 - not cached, but OK because stage descendant was cached
+        // index 7 - not cached or partially cached, but it is okay because descendants are cached
 
         usageCounter.put(stageId, usageCounter.get(stageId) - 1);
         this.descendantCached = descendantCached;
@@ -184,14 +186,16 @@ public class RDD implements Comparable<RDD> {
         } else {
             switch (cacheState) {
                 case ANNOTATED:
-                    // anotated but nothing was in cache
-//                    System.out.println("USE OF EMPTY RDD " + Integer.toString(rddId) + " BY STAGE " + Integer.toString(stageId));
+                    // Annotated case (evicted or not even in cache at all)
                     index = 4;
                     if (firstUse) {
                         // TODO :: not that has been cached might not be true second time if it was not cached first time
                         // evicted
                         index = 0;
                         firstUse = false;
+                    } else if (!hasBeenCached) {
+                        // annotated but never been to cache yet, mark as app did not cache
+                        index = 3;
                     }
                     break;
                 case UNPERSISTED:
@@ -304,15 +308,14 @@ public class RDD implements Comparable<RDD> {
     }
 
     private void printUsageInfo(int index) {
-        // index 0 - RDD id
-        // index 1 - first use of cached RDD
-        // index 2 - was cached when re-used
-        // index 3 - was partially cached when re-used
-        // index 4 - not cached when reused, because app didn't cache (includes RDD not annotated)
-        // index 5 - not cached when reused, because had been evicted before re-use
-        // index 6 - not cached when reused, because had been unpersisted before re-use
-        // index 7 - cached, but not used because stage descendant was cached
-        // index 8 - not cached or partially cached, but it is okay because descendants are cached
+        // index 0 - first use of cached RDD
+        // index 1 - was cached when re-used
+        // index 2 - was partially cached when re-used
+        // index 3 - not cached when reused, because app didn't cache (includes RDD not annotated)
+        // index 4 - not cached when reused, because had been evicted before re-use
+        // index 5 - not cached when reused, because had been unpersisted before re-use
+        // index 6 - cached, but not used because stage descendant was cached
+        // index 7 - not cached or partially cached, but it is okay because descendants are cached
 
         StringBuilder sb = new StringBuilder();
         sb.append("     RDD " + Integer.toString(rddId) + " : ");
@@ -333,7 +336,7 @@ public class RDD implements Comparable<RDD> {
                 sb.append("Not cached because not annotated");
                 break;
             case 4:
-                sb.append("Annotated but no partition is in cache");
+                sb.append("Not cached because had been evicted before re-use");
                 break;
             case 5:
                 sb.append("Previously cached, but unpersisted");
