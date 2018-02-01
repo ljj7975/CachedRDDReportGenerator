@@ -1,3 +1,5 @@
+package ca.uwaterloo.dsg;
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.HashMap;

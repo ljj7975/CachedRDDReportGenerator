@@ -1,3 +1,5 @@
+package ca.uwaterloo.dsg;
+
 import org.json.simple.JsonArray;
 import org.json.simple.JsonObject;
 

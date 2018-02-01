@@ -1,4 +1,5 @@
 import java.io.File;
+import ca.uwaterloo.dsg.MemoryAnalyzer;
 
 public class Test {
 

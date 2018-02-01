@@ -40,7 +40,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'MemoryAnalyzer'
+        attributes 'Main-Class': 'ca.uwaterloo.dsg.MemoryAnalyzer'
     }
 }
 
