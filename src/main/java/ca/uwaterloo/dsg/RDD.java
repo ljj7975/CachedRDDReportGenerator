@@ -3,7 +3,11 @@ package ca.uwaterloo.dsg;
 import org.json.simple.JsonObject;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class RDD implements Comparable<RDD> {
