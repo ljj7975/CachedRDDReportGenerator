@@ -8,6 +8,7 @@ buildscript {
     }
     dependencies {
         classpath "de.undercouch:gradle-download-task:3.3.0"
+        classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
     }
 }
 
@@ -20,6 +21,7 @@ task downloadTestFile(type: Download) {
     dest '/tmp/wiki_test.html'
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 sourceCompatibility = 1.8
 
