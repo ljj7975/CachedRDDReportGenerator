@@ -47,14 +47,17 @@ public class RDD implements Comparable<RDD> {
 
         // TODO :: cleaning up code for grabing Scope information from string hashmap
         String value = (String) rddJson.get("Scope");
-        value = value.substring(1, value.length()-1);           //remove curly brackets
-        String[] keyValuePairs = value.split(",");              //split the string to creat key-value pairs
-        for(String pair : keyValuePairs)                        //iterate over the pairs
-        {
-            String[] entry = pair.split(":");                   //split the pairs to get key and value
-            if ("\"name\"".equals(entry[0])) {
-                callsite += " - "+entry[1].substring(1, entry[1].length()-1);
-                break;
+
+        if (value != null) {
+            value = value.substring(1, value.length()-1);           //remove curly brackets
+            String[] keyValuePairs = value.split(",");              //split the string to creat key-value pairs
+            for(String pair : keyValuePairs)                        //iterate over the pairs
+            {
+                String[] entry = pair.split(":");                   //split the pairs to get key and value
+                if ("\"name\"".equals(entry[0])) {
+                    callsite += " - "+entry[1].substring(1, entry[1].length()-1);
+                    break;
+                }
             }
         }
 
