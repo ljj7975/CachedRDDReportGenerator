@@ -2,7 +2,7 @@
 Fall '17, University of Waterloo.
 
 ## Author
-Jaejun (Brandon) Lee, j474lee@edu.uwaterloo.ca
+Jaejun (Brandon) Lee, j474lee@uwaterloo.ca
 
 ## Background
 In order to take advatnage of full functionality of Spark, maximizing use of cached RDD is very important
